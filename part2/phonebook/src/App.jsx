@@ -16,9 +16,11 @@ const App = () => {
   const [message, setMessage] = useState(null);
   const [messageType, setMessageType] = useState("success");
 
+  const baseUrl = "http://localhost:3001/api/persons";
+
   useEffect(() => {
     console.log("effect");
-    axios.get("http://localhost:3001/persons").then((response) => {
+    axios.get(baseUrl).then((response) => {
       console.log("promise fulfilled");
       setPersons(response.data);
     });
@@ -30,7 +32,6 @@ const App = () => {
       const personObject = {
         name: newName,
         number: newNumber,
-        id: persons.length + 1,
       };
 
       persons.some((person) => person.name === personObject.name)
@@ -50,7 +51,7 @@ const App = () => {
   const handleDelete = (id) => {
     const person = persons.find((p) => p.id === id);
     if (window.confirm(`Delete ${person.name}?`)) {
-      axios.delete(`http://localhost:3001/persons/${id}`).then(() => {
+      axios.delete(`${baseUrl}/${id}`).then(() => {
         setPersons(persons.filter((p) => p.id !== id));
       });
     }
@@ -64,11 +65,17 @@ const App = () => {
       )
     ) {
       axios
-        .put(`http://localhost:3001/persons/${person.id}`, personObject)
+        .put(`${baseUrl}/${person.id}`, personObject)
         .then((response) => {
           setPersons(
             persons.map((p) => (p.id === person.id ? response.data : p)),
           );
+          // Add success notification here
+          setMessageType("success");
+          setMessage(`Updated ${person.name}'s number`);
+          setTimeout(() => {
+            setMessage(null);
+          }, 5000);
         })
         .catch((error) => {
           console.log(error);
@@ -86,12 +93,10 @@ const App = () => {
   };
 
   const addNewPerson = (personObject) => {
-    axios
-      .post("http://localhost:3001/persons", personObject)
-      .then((response) => {
-        setPersons(persons.concat(response.data));
-      });
-    setPersons(persons.concat(personObject));
+    axios.post(baseUrl, personObject).then((response) => {
+      setPersons(persons.concat(response.data));
+    });
+
     setMessageType("success");
     setMessage(`Added ${personObject.name}`);
     setTimeout(() => {

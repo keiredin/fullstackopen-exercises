@@ -1,8 +1,11 @@
 const express = require("express");
 const morgan = require("morgan");
+const cors = require("cors");
 
 const app = express();
 app.use(express.json());
+app.use(cors());
+app.use(express.static("dist"));
 // app.use(morgan("tiny"));
 
 morgan.token("body", (request) => {
@@ -62,7 +65,7 @@ app.delete("/api/persons/:id", (req, res) => {
 
 const generateId = () => {
   const maxId = 1000000000;
-  return Math.floor(Math.random() * maxId);
+  return String(Math.floor(Math.random() * maxId));
 };
 
 app.post("/api/persons", (req, res) => {
@@ -81,6 +84,18 @@ app.post("/api/persons", (req, res) => {
   res.json(newPerson);
 });
 
+app.put("/api/persons/:id", (req, res) => {
+  const id = req.params.id;
+  const { name, number } = req.body;
+  const personIndex = persons.findIndex((person) => person.id === id);
+
+  if (personIndex === -1) {
+    return res.status(404).json({ error: "Person not found" });
+  }
+  persons[personIndex] = { ...persons[personIndex], name, number };
+  res.json(persons[personIndex]);
+});
+
 app.get("/info", (req, res) => {
   const info = `
     <p>Phonebook has info for ${persons.length} people</p>
@@ -89,7 +104,7 @@ app.get("/info", (req, res) => {
   res.send(info);
 });
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
