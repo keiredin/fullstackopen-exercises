@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 app.use(express.json());
 
-const persons = [
+let persons = [
   {
     id: "1",
     name: "Arto Hellas",
@@ -28,6 +28,51 @@ const persons = [
 
 app.get("/api/persons", (req, res) => {
   res.json(persons);
+});
+
+app.get("/api/persons/:id", (req, res) => {
+  const id = req.params.id;
+  const person = persons.find((person) => person.id === id);
+  if (person) {
+    res.json(person);
+  } else {
+    res.status(404).end();
+  }
+});
+
+app.delete("/api/persons/:id", (req, res) => {
+  const id = req.params.id;
+  persons = persons.filter((person) => person.id !== id);
+  console.log(`Deleted person with id ${id}`);
+  res.status(204).end();
+});
+
+const generateId = () => {
+  const maxId = 1000000000;
+  return Math.floor(Math.random() * maxId);
+};
+
+app.post("/api/persons", (req, res) => {
+  const { name, number } = req.body;
+
+  if (!name || !number) {
+    return res.status(400).json({ error: "Name or number is missing" });
+  }
+  const existingPerson = persons.find((person) => person.name === name);
+  if (existingPerson) {
+    return res.status(400).json({ error: "Name must be unique" });
+  }
+  const newPerson = { id: generateId(), name, number };
+  persons = [...persons, newPerson];
+  res.json(newPerson);
+});
+
+app.get("/info", (req, res) => {
+  const info = `
+    <p>Phonebook has info for ${persons.length} people</p>
+    <p>${new Date()}</p>
+  `;
+  res.send(info);
 });
 
 const PORT = 3001;
