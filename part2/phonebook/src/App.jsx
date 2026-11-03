@@ -93,15 +93,24 @@ const App = () => {
   };
 
   const addNewPerson = (personObject) => {
-    axios.post(baseUrl, personObject).then((response) => {
-      setPersons(persons.concat(response.data));
-    });
-
-    setMessageType("success");
-    setMessage(`Added ${personObject.name}`);
-    setTimeout(() => {
-      setMessage(null);
-    }, 5000);
+    axios
+      .post(baseUrl, personObject)
+      .then((response) => {
+        setPersons(persons.concat(response.data));
+        setMessageType("success");
+        setMessage(`Added ${personObject.name}`);
+        setTimeout(() => {
+          setMessage(null);
+        }, 5000);
+      })
+      .catch((error) => {
+        console.log(error.response.data.error);
+        setMessageType("error");
+        setMessage(error.response.data.error);
+        setTimeout(() => {
+          setMessage(null);
+        }, 6000);
+      });
 
     setNewName("");
     setNewNumber("");
