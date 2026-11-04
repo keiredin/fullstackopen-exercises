@@ -1,27 +1,27 @@
-require("dotenv").config();
-const express = require("express");
-const morgan = require("morgan");
-const cors = require("cors");
-const Person = require("./models/phonebooks");
+require('dotenv').config();
+const express = require('express');
+const morgan = require('morgan');
+const cors = require('cors');
+const Person = require('./models/phonebooks');
 
 const app = express();
 app.use(express.json());
 app.use(cors());
-app.use(express.static("dist"));
+app.use(express.static('dist'));
 // app.use(morgan("tiny"));
 
-morgan.token("body", (request) => {
-  if (request.method === "POST") {
+morgan.token('body', (request) => {
+  if (request.method === 'POST') {
     return JSON.stringify(request.body);
   }
-  return " ";
+  return ' ';
 });
 
 app.use(
-  morgan(":method :url :status :res[content-length] - :response-time ms :body"),
+  morgan(':method :url :status :res[content-length] - :response-time ms :body'),
 );
 
-app.get("/api/persons", (req, res, next) => {
+app.get('/api/persons', (req, res, next) => {
   Person.find({})
     .then((persons) => {
       res.json(persons);
@@ -29,7 +29,7 @@ app.get("/api/persons", (req, res, next) => {
     .catch((error) => next(error));
 });
 
-app.get("/api/persons/:id", (req, res, next) => {
+app.get('/api/persons/:id', (req, res, next) => {
   const id = req.params.id;
   Person.findById(id)
     .then((person) => {
@@ -42,7 +42,7 @@ app.get("/api/persons/:id", (req, res, next) => {
     .catch((error) => next(error));
 });
 
-app.delete("/api/persons/:id", (req, res, next) => {
+app.delete('/api/persons/:id', (req, res, next) => {
   const id = req.params.id;
   Person.findByIdAndDelete(id)
     .then(() => {
@@ -57,16 +57,16 @@ app.delete("/api/persons/:id", (req, res, next) => {
 //   return String(Math.floor(Math.random() * maxId));
 // };
 
-app.post("/api/persons", (req, res, next) => {
+app.post('/api/persons', (req, res, next) => {
   const { name, number } = req.body;
 
   if (!name || !number) {
-    return res.status(400).json({ error: "Name or number is missing" });
+    return res.status(400).json({ error: 'Name or number is missing' });
   }
   Person.findOne({ name })
     .then((existingPerson) => {
       if (existingPerson) {
-        return res.status(400).json({ error: "Name must be unique" });
+        return res.status(400).json({ error: 'Name must be unique' });
       }
 
       const newPerson = new Person({
@@ -83,25 +83,25 @@ app.post("/api/persons", (req, res, next) => {
     .catch((error) => next(error));
 });
 
-app.put("/api/persons/:id", (req, res, next) => {
+app.put('/api/persons/:id', (req, res, next) => {
   const id = req.params.id;
   const { name, number } = req.body;
   Person.findByIdAndUpdate(
     id,
     { name, number },
-    { new: true, runValidators: true, context: "query" },
+    { new: true, runValidators: true, context: 'query' },
   )
     .then((updatedPerson) => {
       if (updatedPerson) {
         res.json(updatedPerson);
       } else {
-        res.status(404).json({ error: "Person not found" });
+        res.status(404).json({ error: 'Person not found' });
       }
     })
     .catch((error) => next(error));
 });
 
-app.get("/info", (req, res, next) => {
+app.get('/info', (req, res, next) => {
   Person.find({})
     .then((persons) => {
       const info = `
@@ -114,8 +114,8 @@ app.get("/info", (req, res, next) => {
 });
 
 // Middleware for handling unknown endpoint
-const unknownEndpoint = (request, response, next) => {
-  response.status(404).send({ error: "unknown endpoint" });
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' });
 };
 app.use(unknownEndpoint);
 
@@ -123,9 +123,9 @@ app.use(unknownEndpoint);
 const errorHandler = (error, request, response, next) => {
   console.error(error.message);
 
-  if (error.name === "CastError") {
-    return response.status(400).send({ error: "malformatted id" });
-  } else if (error.name === "ValidationError") {
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' });
+  } else if (error.name === 'ValidationError') {
     return response.status(400).json({ error: error.message });
   }
 
